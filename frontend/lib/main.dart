@@ -5,21 +5,25 @@ import 'package:file_picker/file_picker.dart';
 import 'package:video_player/video_player.dart';
 
 void main() {
-  runApp(SnapCutApp());
+  runApp(const SnapCutApp());
 }
 
 class SnapCutApp extends StatelessWidget {
+  const SnapCutApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'SnapCut.ai',
       theme: ThemeData.dark(),
-      home: VideoUploader(),
+      home: const VideoUploader(),
     );
   }
 }
 
 class VideoUploader extends StatefulWidget {
+  const VideoUploader({super.key});
+
   @override
   _VideoUploaderState createState() => _VideoUploaderState();
 }
@@ -45,41 +49,103 @@ class _VideoUploaderState extends State<VideoUploader> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('SnapCut.ai')),
-      body: Center(
+      appBar: AppBar(title: const Text('SnapCut.ai')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            // Greeting Message
+            const Text(
+              'Welcome to SnapCut.ai!',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+
+            // Instructions for Users
+            Card(
+              elevation: 3,
+              color: Colors.grey[850],
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('How to use:',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 6),
+                    _buildInstructionItem(
+                        Icons.upload_file, 'Upload a video file'),
+                    _buildInstructionItem(
+                        Icons.cut, 'The AI will detect key moments'),
+                    _buildInstructionItem(
+                        Icons.save, 'Your trimmed clip will be saved'),
+                    _buildInstructionItem(
+                        Icons.play_arrow, 'Preview your trimmed video'),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Video Preview
             _videoPath == null
-                ? Text('Kein Video ausgewählt')
+                ? const Text('No video selected', style: TextStyle(fontSize: 16))
                 : Column(
                     children: [
                       AspectRatio(
                         aspectRatio: _controller!.value.aspectRatio,
                         child: VideoPlayer(_controller!),
                       ),
-                      ElevatedButton(
+                      const SizedBox(height: 10),
+                      ElevatedButton.icon(
                         onPressed: () {
                           _controller!.value.isPlaying
                               ? _controller!.pause()
                               : _controller!.play();
                         },
-                        child: Icon(
-                          _controller!.value.isPlaying
-                              ? Icons.pause
-                              : Icons.play_arrow,
+                        icon: Icon(_controller!.value.isPlaying
+                            ? Icons.pause
+                            : Icons.play_arrow),
+                        label: Text(
+                            _controller!.value.isPlaying ? 'Pause' : 'Play'),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 24, vertical: 12),
                         ),
                       ),
                     ],
                   ),
-            SizedBox(height: 20),
-            ElevatedButton(
+            const SizedBox(height: 20),
+
+            // Upload Button
+            ElevatedButton.icon(
               onPressed: _pickVideo,
-              child: Text('Video hochladen'),
+              icon: const Icon(Icons.file_upload),
+              label: const Text('Upload Video'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                backgroundColor: Colors.blueAccent,
+              ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildInstructionItem(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(icon, size: 20, color: Colors.blueAccent),
+        const SizedBox(width: 10),
+        Text(text, style: const TextStyle(fontSize: 16)),
+      ],
     );
   }
 }
