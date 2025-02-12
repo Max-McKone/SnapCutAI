@@ -35,19 +35,19 @@ class _VideoUploaderState extends State<VideoUploader> {
   VideoPlayerController? _controller;
   String? _videoPath;
   bool _isUploading = false;
-  bool _isPicking = false; // New state for loading indicator
+  bool _isPicking = false;
   final String _apiUrl = "http://127.0.0.1:8000/upload";
 
   Future<void> _pickVideo() async {
     setState(() {
-      _isPicking = true; // Show loading indicator
+      _isPicking = true;
     });
 
     FilePickerResult? result =
         await FilePicker.platform.pickFiles(type: FileType.video);
 
     setState(() {
-      _isPicking = false; // Hide loading indicator
+      _isPicking = false;
     });
 
     if (result != null && result.files.single.path != null) {
@@ -67,7 +67,7 @@ class _VideoUploaderState extends State<VideoUploader> {
       _isUploading = true;
     });
 
-    print("Picked file: $_videoPath"); // Debugging
+    print("Picked file: $_videoPath");
     print("File type: ${lookupMimeType(_videoPath!)}"); // Debugging
 
     var request = http.MultipartRequest('POST', Uri.parse(_apiUrl));

@@ -105,10 +105,4 @@ def request_entity_too_large(error):
     }), 413
 
 if __name__ == "__main__":
-    # Run with threading and increased timeout for large files
-    run_simple(
-        hostname="0.0.0.0",
-        port=8000,
-        application=app,
-        threaded=True
-    )
+    app.run(host="0.0.0.0", port=8000, debug=True)
