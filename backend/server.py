@@ -25,6 +25,18 @@ def detect_video_markers(video_path):
     end_frame = np.argmax(frame_diffs[len(frame_diffs)//2:]) + len(frame_diffs)//2
     return start_frame, end_frame
 
+@app.route('/upload', methods=['POST'])
+def upload_video():
+    file = request.files['file']
+    file_path = f"./uploads/{file.filename}"
+    file.save(file_path)
+
+    start, end = detect_video_markers(file_path)
+    output_path = f"./outputs/trimmed_{file.filename}"
+    trim_video(file_path, output_path, start, end)
+
+    return jsonify({"status": "success", "output_path": output_path})
+
 @app.route('/process_video', methods=['POST'])
 def process_video():
     file = request.files['video']

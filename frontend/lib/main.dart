@@ -35,11 +35,21 @@ class _VideoUploaderState extends State<VideoUploader> {
   VideoPlayerController? _controller;
   String? _videoPath;
   bool _isUploading = false;
-  final String _apiUrl = "http://your-vm-ip:5000/upload";
+  bool _isPicking = false; // New state for loading indicator
+  final String _apiUrl = "http://127.0.0.1:5000/upload";
 
   Future<void> _pickVideo() async {
+    setState(() {
+      _isPicking = true; // Show loading indicator
+    });
+
     FilePickerResult? result =
         await FilePicker.platform.pickFiles(type: FileType.video);
+
+    setState(() {
+      _isPicking = false; // Hide loading indicator
+    });
+
     if (result != null && result.files.single.path != null) {
       setState(() {
         _videoPath = result.files.single.path;
@@ -65,7 +75,10 @@ class _VideoUploaderState extends State<VideoUploader> {
       contentType: MediaType.parse(lookupMimeType(_videoPath!) ?? 'video/mp4'),
     ));
 
-    var response = await request.send();
+    var response = await request
+        .send()
+        .timeout(Duration(seconds: 60)); // Increase timeout to 60 seconds
+
     if (response.statusCode == 200) {
       print("Upload successful!");
     } else {
@@ -125,9 +138,13 @@ class _VideoUploaderState extends State<VideoUploader> {
                     style: TextStyle(fontSize: 16))
                 : Column(
                     children: [
-                      AspectRatio(
-                        aspectRatio: _controller!.value.aspectRatio,
-                        child: VideoPlayer(_controller!),
+                      SizedBox(
+                        width: 100, // Fixed width
+                        height: 200, // Fixed height
+                        child: AspectRatio(
+                          aspectRatio: _controller!.value.aspectRatio,
+                          child: VideoPlayer(_controller!),
+                        ),
                       ),
                       const SizedBox(height: 10),
                       ElevatedButton.icon(
@@ -158,16 +175,18 @@ class _VideoUploaderState extends State<VideoUploader> {
                     ),
                   ),
             const SizedBox(height: 20),
-            ElevatedButton.icon(
-              onPressed: _pickVideo,
-              icon: const Icon(Icons.file_upload),
-              label: const Text('Choose Video'),
-              style: ElevatedButton.styleFrom(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                backgroundColor: Colors.blueAccent,
-              ),
-            ),
+            _isPicking
+                ? const CircularProgressIndicator() // Show loading indicator while selecting a file
+                : ElevatedButton.icon(
+                    onPressed: _pickVideo,
+                    icon: const Icon(Icons.file_upload),
+                    label: const Text('Choose Video'),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 12),
+                      backgroundColor: Colors.blueAccent,
+                    ),
+                  ),
           ],
         ),
       ),
