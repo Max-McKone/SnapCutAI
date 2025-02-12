@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
@@ -33,7 +34,9 @@ class VideoUploader extends StatefulWidget {
 
 class _VideoUploaderState extends State<VideoUploader> {
   VideoPlayerController? _controller;
+  VideoPlayerController? _editedVideoController; // Controller for edited video
   String? _videoPath;
+  String? _editedVideoPath; // Path of the edited video
   bool _isUploading = false;
   bool _isPicking = false;
   final String _apiUrl = "http://127.0.0.1:8000/upload";
@@ -84,6 +87,21 @@ class _VideoUploaderState extends State<VideoUploader> {
       var response = await request.send().timeout(Duration(seconds: 60));
       if (response.statusCode == 200) {
         print("Upload successful!");
+
+        // Parse the response to get the edited video path
+        var responseBody = await response.stream.bytesToString();
+        var jsonResponse = jsonDecode(responseBody);
+        String editedVideoPath = jsonResponse['output_path'];
+
+        // Update the edited video path and initialize the video player
+        setState(() {
+          _editedVideoPath = editedVideoPath;
+          _editedVideoController =
+              VideoPlayerController.file(File(_editedVideoPath!))
+                ..initialize().then((_) {
+                  setState(() {});
+                });
+        });
       } else {
         print("Upload failed with status: ${response.statusCode}");
       }
@@ -167,6 +185,42 @@ class _VideoUploaderState extends State<VideoUploader> {
                       ),
                     ],
                   ),
+            const SizedBox(height: 20),
+            _editedVideoPath != null
+                ? Column(
+                    children: [
+                      const Text(
+                        'Edited Video:',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        width: 100, // Fixed width
+                        height: 200, // Fixed height
+                        child: AspectRatio(
+                          aspectRatio:
+                              _editedVideoController!.value.aspectRatio,
+                          child: VideoPlayer(_editedVideoController!),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          _editedVideoController!.value.isPlaying
+                              ? _editedVideoController!.pause()
+                              : _editedVideoController!.play();
+                        },
+                        icon: Icon(_editedVideoController!.value.isPlaying
+                            ? Icons.pause
+                            : Icons.play_arrow),
+                        label: Text(_editedVideoController!.value.isPlaying
+                            ? 'Pause'
+                            : 'Play'),
+                      ),
+                    ],
+                  )
+                : Container(), // Hide if no edited video
             const SizedBox(height: 20),
             _isUploading
                 ? const CircularProgressIndicator()
