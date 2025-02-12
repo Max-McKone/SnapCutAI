@@ -37,24 +37,28 @@ def detect_video_markers(video_path):
     start_frame = np.argmax(frame_diffs[:len(frame_diffs)//2])
     end_frame = np.argmax(frame_diffs[len(frame_diffs)//2:]) + len(frame_diffs)//2
     return start_frame, end_frame
+
 @app.route('/upload', methods=['POST'])
 def upload_video():
     try:
         if 'file' not in request.files:
+            print("No file uploaded")  # Debugging
             return jsonify({"status": "error", "message": "No file uploaded"}), 400
         
         file = request.files['file']
         if file.filename == '':
+            print("Empty filename")  # Debugging
             return jsonify({"status": "error", "message": "Empty filename"}), 400
         
         # Check file type
-        allowed_extensions = {'mp4', 'avi', 'mov', 'mkv'}  # Ensure .mp4 is allowed
+        allowed_extensions = {'mp4', 'avi', 'mov', 'mkv'}
         file_extension = file.filename.rsplit('.', 1)[1].lower()
         if file_extension not in allowed_extensions:
+            print(f"Unsupported file type: {file_extension}")  # Debugging
             return jsonify({
                 "status": "error",
                 "message": f"Unsupported file type: {file_extension}. Allowed types: {allowed_extensions}"
-            }), 403  # Return 403 for unsupported file types
+            }), 403
         
         # Secure the filename and save to uploads folder
         filename = secure_filename(file.filename)
@@ -78,7 +82,7 @@ def upload_video():
         })
 
     except Exception as e:
-        print(f"Error processing video: {str(e)}")
+        print(f"Error processing video: {str(e)}")  # Debugging
         traceback.print_exc()  # Print full traceback for debugging
         return jsonify({"status": "error", "message": str(e)}), 500
     
