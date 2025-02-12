@@ -1,8 +1,11 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:video_player/video_player.dart';
+import 'package:http/http.dart' as http;
+import 'package:path/path.dart';
+import 'package:mime/mime.dart';
+import 'package:http_parser/http_parser.dart';
 
 void main() {
   runApp(const SnapCutApp());
@@ -31,6 +34,8 @@ class VideoUploader extends StatefulWidget {
 class _VideoUploaderState extends State<VideoUploader> {
   VideoPlayerController? _controller;
   String? _videoPath;
+  bool _isUploading = false;
+  final String _apiUrl = "http://your-vm-ip:5000/upload";
 
   Future<void> _pickVideo() async {
     FilePickerResult? result =
@@ -46,6 +51,32 @@ class _VideoUploaderState extends State<VideoUploader> {
     }
   }
 
+  Future<void> _uploadVideo() async {
+    if (_videoPath == null) return;
+    setState(() {
+      _isUploading = true;
+    });
+
+    var request = http.MultipartRequest('POST', Uri.parse(_apiUrl));
+    request.files.add(await http.MultipartFile.fromPath(
+      'file',
+      _videoPath!,
+      filename: basename(_videoPath!),
+      contentType: MediaType.parse(lookupMimeType(_videoPath!) ?? 'video/mp4'),
+    ));
+
+    var response = await request.send();
+    if (response.statusCode == 200) {
+      print("Upload successful!");
+    } else {
+      print("Upload failed!");
+    }
+
+    setState(() {
+      _isUploading = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -56,14 +87,11 @@ class _VideoUploaderState extends State<VideoUploader> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Greeting Message
             const Text(
               'Welcome to SnapCut.ai!',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
-
-            // Instructions for Users
             Card(
               elevation: 3,
               color: Colors.grey[850],
@@ -92,10 +120,9 @@ class _VideoUploaderState extends State<VideoUploader> {
               ),
             ),
             const SizedBox(height: 20),
-
-            // Video Preview
             _videoPath == null
-                ? const Text('No video selected', style: TextStyle(fontSize: 16))
+                ? const Text('No video selected',
+                    style: TextStyle(fontSize: 16))
                 : Column(
                     children: [
                       AspectRatio(
@@ -114,22 +141,30 @@ class _VideoUploaderState extends State<VideoUploader> {
                             : Icons.play_arrow),
                         label: Text(
                             _controller!.value.isPlaying ? 'Pause' : 'Play'),
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 24, vertical: 12),
-                        ),
                       ),
                     ],
                   ),
             const SizedBox(height: 20),
-
-            // Upload Button
+            _isUploading
+                ? const CircularProgressIndicator()
+                : ElevatedButton.icon(
+                    onPressed: _uploadVideo,
+                    icon: const Icon(Icons.cloud_upload),
+                    label: const Text('Upload to AI'),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 12),
+                      backgroundColor: Colors.greenAccent,
+                    ),
+                  ),
+            const SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: _pickVideo,
               icon: const Icon(Icons.file_upload),
-              label: const Text('Upload Video'),
+              label: const Text('Choose Video'),
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 backgroundColor: Colors.blueAccent,
               ),
             ),
