@@ -96,6 +96,5 @@ if __name__ == "__main__":
         hostname="0.0.0.0",
         port=5000,
         application=app,
-        threaded=True,
-        processes=4
+        threaded=True
     )
