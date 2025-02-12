@@ -36,7 +36,7 @@ class _VideoUploaderState extends State<VideoUploader> {
   String? _videoPath;
   bool _isUploading = false;
   bool _isPicking = false; // New state for loading indicator
-  final String _apiUrl = "http://127.0.0.1:5000/upload";
+  final String _apiUrl = "http://127.0.0.1:8000/upload";
 
   Future<void> _pickVideo() async {
     setState(() {

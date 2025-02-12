@@ -108,7 +108,7 @@ if __name__ == "__main__":
     # Run with threading and increased timeout for large files
     run_simple(
         hostname="0.0.0.0",
-        port=5000,
+        port=8000,
         application=app,
         threaded=True
     )
