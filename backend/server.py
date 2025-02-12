@@ -5,6 +5,7 @@ import numpy as np
 import ffmpeg
 import os
 from werkzeug.serving import run_simple
+import traceback
 
 app = Flask(__name__)
 
@@ -47,6 +48,15 @@ def upload_video():
         if file.filename == '':
             return jsonify({"status": "error", "message": "Empty filename"}), 400
         
+        # Check file type
+        allowed_extensions = {'mp4', 'avi', 'mov', 'mkv'}
+        file_extension = file.filename.rsplit('.', 1)[1].lower()
+        if file_extension not in allowed_extensions:
+            return jsonify({
+                "status": "error",
+                "message": f"Unsupported file type: {file_extension}. Allowed types: {allowed_extensions}"
+            }), 400
+        
         # Secure the filename and save to uploads folder
         filename = secure_filename(file.filename)
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
@@ -70,8 +80,9 @@ def upload_video():
 
     except Exception as e:
         print(f"Error processing video: {str(e)}")
+        traceback.print_exc()  # Print full traceback for debugging
         return jsonify({"status": "error", "message": str(e)}), 500
-
+    
 def trim_video(input_path, output_path, start_frame, end_frame, fps=30):
     start_time = start_frame / fps
     end_time = end_frame / fps

@@ -67,6 +67,9 @@ class _VideoUploaderState extends State<VideoUploader> {
       _isUploading = true;
     });
 
+    print("Picked file: $_videoPath"); // Debugging
+    print("File type: ${lookupMimeType(_videoPath!)}"); // Debugging
+
     var request = http.MultipartRequest('POST', Uri.parse(_apiUrl));
     request.files.add(await http.MultipartFile.fromPath(
       'file',
@@ -75,19 +78,22 @@ class _VideoUploaderState extends State<VideoUploader> {
       contentType: MediaType.parse(lookupMimeType(_videoPath!) ?? 'video/mp4'),
     ));
 
-    var response = await request
-        .send()
-        .timeout(Duration(seconds: 60)); // Increase timeout to 60 seconds
+    print("Sending request..."); // Debugging
 
-    if (response.statusCode == 200) {
-      print("Upload successful!");
-    } else {
-      print("Upload failed!");
+    try {
+      var response = await request.send().timeout(Duration(seconds: 60));
+      if (response.statusCode == 200) {
+        print("Upload successful!");
+      } else {
+        print("Upload failed with status: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Error during upload: $e"); // Debugging
+    } finally {
+      setState(() {
+        _isUploading = false;
+      });
     }
-
-    setState(() {
-      _isUploading = false;
-    });
   }
 
   @override
