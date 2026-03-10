@@ -46,22 +46,3 @@ flutter pub get
 	2.	Run the app:
 
 flutter run
-
-
-
-How It Works
-	1.	Upload a Video: The Flutter app allows users to select a video file.
-	2.	Video Processing:
-	•	The backend analyzes frame differences to detect key events.
-	•	It determines the start and end points of the most significant moments.
-	•	The video is trimmed using FFmpeg.
-	3.	Output: The processed video is saved and can be accessed from the frontend.
-
-Future Improvements
-	•	Backend Server: Convert the Python script into a Flask/FastAPI server for better integration.
-	•	User Interface Enhancements: Add loading indicators and processing status updates.
-	•	Custom Trimming Controls: Allow users to adjust detected markers before processing.
-
-Contributing:
-
-Feel free to fork and improve the project! 🚀
