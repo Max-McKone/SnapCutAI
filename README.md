@@ -1,4 +1,4 @@
-#SnapCut AI
+# SnapCut AI
 
 SnapCut AI is an AI-powered video clipper that automatically detects and trims key moments in videos. The application consists of a Flutter frontend for video upload and preview, and a Python backend that processes the video using OpenCV and FFmpeg.
 
